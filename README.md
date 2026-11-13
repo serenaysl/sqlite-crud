@@ -1,93 +1,146 @@
-# Week 3 - SQLite CRUD API
+# Task CRUD API - PostgreSQL and Docker
 
 ## Project Overview
 
-This project is a simple task management API built with Node.js, Express, and SQLite.
+This project is a simple task management REST API built with Node.js, Express, PostgreSQL, and Docker.
 
-I created this project to practice CRUD operations and learn how to connect an API to a database.
-
-In my previous practice, task data was stored in a JavaScript array. In this project, I used SQLite so the tasks can be saved even after restarting the server.
+It is an updated version of my previous SQLite CRUD project. I changed the database from SQLite to PostgreSQL and used Docker Compose to run the API and database together.
 
 ## Technologies Used
 
 - Node.js
 - Express.js
-- SQLite
-- better-sqlite3
-- DB Browser for SQLite
+- PostgreSQL 18
+- Docker and Docker Compose
+- node-postgres (pg)
+- dotenv
 
-## Why I Used SQLite
+## Project Structure
 
-I chose SQLite because it is simple to use and does not need a separate database server. It stores data in a single file called `tasks.db`.
+- server.js - Express API and routes
+- repository.js - PostgreSQL database operations
+- init.sql - Creates the table and inserts example tasks
+- Dockerfile - Builds the Node.js application
+- compose.yaml - Starts the API and database
+- .env.example - Example environment variables
 
-The database file is created automatically when the application starts.
+## How to Run
 
-## How to Run the Project
-
-First, clone the repository and open the project folder.
-
-Install the required packages:
+1. Clone this repository.
+2. Copy .env.example to .env.
+3. Replace YOUR_PASSWORD in .env with a local database password.
+4. Run:
 
 ```bash
-npm install
+docker compose up --build
 ```
 
-Start the server:
-
-```bash
-node server.js
-```
-
-The API runs at:
+The API is available at:
 
 http://localhost:3000
 
-The application automatically creates the database and the tasks table if they do not exist. It also adds three example tasks when the table is empty.
+Docker Compose starts the Node.js API and PostgreSQL database.
 
 ## API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | /tasks | Get all tasks |
-| GET | /tasks/:id | Get a task by ID |
-| POST | /tasks | Create a new task |
+| GET | /tasks/:id | Get one task |
+| POST | /tasks | Create a task |
 | PUT | /tasks/:id | Update a task |
 | DELETE | /tasks/:id | Delete a task |
 
 ## Example Request
 
-POST /tasks
-
-```json
-{
-  "title": "Learn SQL"
-}
+```bash
+curl -i http://localhost:3000/tasks
 ```
 
-## SQL Queries
+Example response:
 
-I used DB Browser for SQLite to practice some SQL queries.
+```json
+[
+  {
+    "id": 1,
+    "title": "Learn PostgreSQL",
+    "done": false
+  }
+]
+```
 
-For example:
+The example response illustrates the API format. Actual data may differ.
+
+## Database
+
+PostgreSQL runs inside a Docker container.
+
+The tasks table contains:
+
+- id - Primary key
+- title - Task title
+- done - Boolean completion status
+
+All SQL queries are handled in repository.js using parameterized queries.
+
+The API keeps the same endpoints and validation rules as the previous version. The route implementation was updated to call the new PostgreSQL repository because the original SQLite queries were written directly inside server.js.
+
+## Automatic Database Setup
+
+When PostgreSQL initializes a new database, init.sql creates the tasks table.
+
+If the table is empty, three example tasks are inserted:
+
+- Learn PostgreSQL
+- Build CRUD API
+- Test Docker
+
+I tested this using a separate Docker Compose project with an empty database volume.
+
+## Persistence Test
+
+I created a task called "Docker Persistence Test" through the API.
+
+Then I ran:
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+After restarting the containers, I checked the database:
 
 ```sql
 SELECT * FROM tasks;
 ```
 
-This query returns all tasks stored in the database.
+The task was still present.
 
-I also practiced updating tasks and deleting completed tasks.
-
-The SQL queries are saved in the `queries.sql` file.
+This confirms that the Docker volume preserves PostgreSQL data across container restarts.
 
 ## Database Screenshot
 
-![SQLite Database](screenshots/database.png)
+![PostgreSQL Persistence Test](screenshots/postgres-persistence.png)
 
 ## What I Learned
 
-In this project, I learned how to connect an Express API to a SQLite database.
+I learned how to run PostgreSQL in Docker, connect an Express API to a database server, and use Docker Compose to start multiple services.
 
-I practiced creating tables, inserting tasks, reading data, updating records, and deleting tasks using SQL.
+I also practiced environment variables, SQL queries, database repositories, and persistent Docker volumes.
 
-I also learned that using a database allows data to remain available after restarting the server.
+## Verified HTTP Response
+
+I tested the API using curl:
+
+```bash
+curl -i http://localhost:3000/tasks
+```
+
+Actual response:
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+[{"id":1,"title":"Docker Persistence Test","done":false}]
+```
