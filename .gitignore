@@ -2,3 +2,8 @@ node_modules/
 tasks.db
 tasks.db-shm
 tasks.db-wal
+.env
+
+server.sqlite.backup.js
+
+README.sqlite.backup.md
